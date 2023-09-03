@@ -54,6 +54,7 @@ struct net_request {
 struct net_request_data {
     unsigned char * request_data;
     size_t request_length;
+    size_t request_capacity;
 };
 
 // stack

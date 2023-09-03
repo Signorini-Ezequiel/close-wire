@@ -9,6 +9,7 @@ int main(int argc, char ** argv) {
     
     union net_address address;
     memset(&address, 0, sizeof(address));
+
     struct net_open x = net_listen(0, &address, port, 6); // listen requests
     if (x.error) {
         printf("Ufa, dio error el net listen! 0x%x\n", x.error);
@@ -16,7 +17,7 @@ int main(int argc, char ** argv) {
     }
 
     printf("Ya estoy escuchando lol! 0.0.0.0:%d\n", (int) port);
-    while (1) {
+    for (;;) {
         struct net_request req = net_accept(&x);
         if (!req.socket) {
             if (req.error) {
@@ -34,18 +35,18 @@ int main(int argc, char ** argv) {
                 (int) req.external_port, req.is_ipv6);
             static struct net_request_data result;
             memset(&result, 0, sizeof(result));
-            int leido = net_read(&x, &req, &result);
-            if (leido != 0) {
+            net_request_data_alloc(&result, 16384);
+            ssize_t leido = net_read(&x, &req, &result, result.request_capacity);
+            if (leido < 0) {
                 printf("Ufa, no pude leer lo que me mandaron...\n");
-                net_read_free(&x, &result);
             } else {
                 printf("wowowowowow hay mensaje (%zu):\n%s\n", result.request_length, result.request_data);
-                net_read_free(&x, &result);
                 printf("Le voy a responder 'jaja'...\n");
                 const char * mensaje = "jaja";
                 net_send(&x, &req, mensaje, strlen(mensaje));
-                net_close(&x, &req);
             }
+            net_close(&x, &req);
+            net_request_data_free(&result);
         }
     }
 

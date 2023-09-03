@@ -5,7 +5,6 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 struct net_open net_listen(int is_ipv6, union net_address * address, net_port port, unsigned int max_connections) {
 
@@ -31,7 +30,7 @@ struct net_open net_listen(int is_ipv6, union net_address * address, net_port po
         name.sin6_addr.__in6_u.__u6_addr32[2] = address->ipv6.split.dw3;
         name.sin6_addr.__in6_u.__u6_addr32[3] = address->ipv6.split.dw4;
 
-        int bind_val = bind(httpd_socket, (struct sockaddr *) &name, sizeof(name));
+        bind_val = bind(httpd_socket, (struct sockaddr *) &name, sizeof(name));
 
     } else {
 
@@ -42,7 +41,7 @@ struct net_open net_listen(int is_ipv6, union net_address * address, net_port po
         name.sin_family = AF_INET;
         name.sin_addr.s_addr = address->ipv4.ip;
 
-        int bind_val = bind(httpd_socket, (struct sockaddr *) &name, sizeof(name));
+        bind_val = bind(httpd_socket, (struct sockaddr *) &name, sizeof(name));
 
     }
 
@@ -99,22 +98,36 @@ struct net_request net_accept(struct net_open * net) {
 
 }
 
-int net_read(struct net_open * net, struct net_request * request, struct net_request_data * result) {
-    const size_t bufsize = 1024 * 16;
-    char * buffer = calloc(bufsize, 1);
-    ssize_t read = recv(request->socket, buffer, bufsize, 0);
+// podria no enviarse el mensaje completo, si se excede el buffer
+ssize_t net_read(struct net_open * net, struct net_request * request, struct net_request_data * result, const size_t length) {
+    ssize_t read = recv(request->socket, result->request_data, (result->request_capacity > length ? length : result->request_capacity), 0);
     if (read < 0) {
-        return (int) read;
+        if (errno < 0) {
+            return (ssize_t) errno;
+        } else {
+            return (ssize_t) -errno;
+        }
     } else {
-        result->request_data = buffer;
-        result->request_length = (size_t) read;
-        return 0;
+        result->request_length = read;
+        return read;
     }
 }
 
-void net_read_free(struct net_open * net, struct net_request_data * data) {
+size_t net_request_data_alloc(struct net_request_data * data, size_t capacity) {
+    void * algo = malloc(capacity);
+    if (!algo) {
+        return 0;
+    }
+    data->request_capacity = capacity;
+    data->request_data = algo;
+    data->request_length = 0;
+    return capacity;
+}
+
+void net_request_data_free(struct net_request_data * data) {
     if (data->request_data) {
         free(data->request_data);
+        data->request_data = NULL;
     }
 }
 

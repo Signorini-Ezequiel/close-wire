@@ -26,6 +26,7 @@ struct http_request {
     int request_type; // 'POST'
     char * request_context; // '/mensaje'
     struct http_header * headers; // '[{name: "Host", value: "google.com"}, ...]'
+    size_t headers_length;  // cantidad de headers en el array
     unsigned char * content; // "Hola, este es el mensaje!"
     size_t content_length;
 };
