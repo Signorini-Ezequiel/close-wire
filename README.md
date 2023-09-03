@@ -1,5 +1,6 @@
-# close-wire  -  Servicio de mensajería altamente optimizado y reforzado para su uso simple y seguro
-  
+# close-wire
+Servicio de mensajería altamente optimizado y reforzado para su uso simple y seguro
+
 ## Funcionalidad:  
 * Servidor por concurrencia altamente optimizado, hecho en C  
 * TODO...  
