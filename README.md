@@ -1,2 +1,10 @@
-# close-wire
-This project if for an App make to be able to talk in a secure way
+# close-wire  -  Servicio de mensajería altamente optimizado y reforzado para su uso simple y seguro
+  
+## Funcionalidad:  
+* Servidor por concurrencia altamente optimizado, hecho en C  
+* TODO...  
+  
+## Autores:  
+> Ezequiel Signorini  
+> GD-gh (Tomás Gutiérrez)  
+  
